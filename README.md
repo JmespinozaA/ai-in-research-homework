@@ -14,7 +14,7 @@ To start any week, open the week's folder below, or its page on [class.xhelio.ai
 |---|---|---|
 | [1](week-1/) | The hardest task in your field, as an AI benchmark task | Wed Oct 7, before class |
 | [2](week-2/) | Build your own agent: a harness with one tool, `bash` | Wed Oct 14, before class |
-| [3](week-3/) | Talk to your agent from your phone: a Telegram MCP server, as a plugin your harness loads | Wed Oct 21, before class |
+| [3](week-3/) | Talk to your agent from your phone, about your research: two MCP servers (Telegram, and one for your research) as plugins your harness loads | Wed Oct 21, before class |
 
 ## Rules
 

@@ -1,6 +1,6 @@
 ---
 name: build-a-telegram-plugin
-description: Guide a student in UCLA's "AI in Research" class (EPSS 254, Fall 2026) through the week 3 homework - a Telegram bot, a Telegram MCP server packaged as a Claude-Code-style plugin, a plugin loader and MCP client in their week 2 harness, and a Telegram mode with approvals by reply - then the pull request. Use when the user wants to start, continue, test or submit their week 3 homework, their Telegram plugin, or their harness's plugin support.
+description: Guide a student in UCLA's "AI in Research" class (EPSS 254, Fall 2026) through the week 3 homework - a Telegram bot, a Telegram MCP server and an MCP server for their own research, both packaged as Claude-Code-style plugins, a plugin loader and MCP client in their week 2 harness, and a Telegram mode with approvals by reply - then the pull request. Use when the user wants to start, continue, test or submit their week 3 homework, their Telegram or research plugin, or their harness's plugin support.
 ---
 
 # Talk to your agent from your phone (AI in Research, week 3)
@@ -9,14 +9,14 @@ description: Guide a student in UCLA's "AI in Research" class (EPSS 254, Fall 20
 
 The person in front of you is in a UCLA graduate seminar on AI in research: a student, an auditor or a professor, often a physical scientist. In week 2 they built a **harness**: an agent loop with one tool, `bash`, on an OpenAI-compatible model API. The full assignment is `week-3/README.md` in this repository; read it first.
 
-In class this week they learned what production harnesses add around the loop: tools and MCP servers, AGENTS.md, skills and progressive disclosure, plugins, permissions, sandboxes and hooks. This homework applies that: the harness keeps only the loop and `bash`, and gains a **plugin loader**; the first plugin is a **Telegram MCP server**, so they can message their agent from their phone.
+In class this week they learned what production harnesses add around the loop: tools and MCP servers, AGENTS.md, skills and progressive disclosure, plugins, permissions, sandboxes and hooks. This homework applies that: the harness keeps only the loop and `bash`, and gains a **plugin loader**. It gets two plugins: a **Telegram MCP server**, so they can message their agent from their phone, and an **MCP server for their own research**, so the agent can do something useful for them when they do.
 
 - **They must understand what they build.** You write most of the code, in small steps, and explain each in a sentence or two. At the end they should be able to say where the MCP tools and the skill enter the model's context, and who decides to call each tool.
 - **Stop at every CHECKPOINT** and wait for their answer.
 - **Secrets stay out of this conversation.** Never ask the student to paste the bot token, an API key or any password into the chat, and never print one. They type secrets into `.env` themselves. When a command needs the token, read it from `.env` inside the shell (`set -a; . ./.env; set +a`) so it never appears in your output. Steps marked **(student does this)**: give them the exact steps and wait.
 - **Be honest about failures.** Show the key line of an error, say what it means, fix it.
 
-Say hello, tell them in two sentences what the homework is, and give this plan: (1) create the bot, (2) build the MCP server as a plugin and test it, (3) teach the harness to load plugins, (4) add a Telegram mode with approvals by reply, (5) test from the phone and in a second host, (6) publish and open the pull request. It usually takes one or two sessions of 1–2 hours.
+Say hello, tell them in two sentences what the homework is, and give this plan: (1) create the bot, (2) build the Telegram MCP server as a plugin and test it, (3) choose and build a research MCP server as a second plugin, (4) teach the harness to load plugins, (5) add a Telegram mode with approvals by reply, (6) test from the phone and in a second host, (7) publish and open the pull request. It usually takes two sessions of 1–2 hours.
 
 ## Step 0: set up
 
@@ -39,7 +39,7 @@ Say hello, tell them in two sentences what the homework is, and give this plan: 
 
 Tell them: the token is a password. Anyone with it can read and send as the bot. If it ever leaks, `/revoke` in BotFather.
 
-## Step 2: the MCP server, as a plugin
+## Step 2: the Telegram MCP server, as a plugin
 
 Create `plugins/<user>-telegram/` in the harness repository:
 
@@ -61,7 +61,7 @@ Create `plugins/<user>-telegram/` in the harness repository:
        "env": { "TELEGRAM_BOT_TOKEN": "${TELEGRAM_BOT_TOKEN}",
                 "TELEGRAM_CHAT_ID": "${TELEGRAM_CHAT_ID}" } } } }
    ```
-   `${CLAUDE_PLUGIN_ROOT}` is the plugin's folder; `${VAR}` comes from the environment. Claude Code expands both; their harness will too (Step 3).
+   `${CLAUDE_PLUGIN_ROOT}` is the plugin's folder; `${VAR}` comes from the environment. Claude Code expands both; their harness will too (Step 4).
 3. **`server.py`**: a uv script with inline dependencies (`# /// script` block: `mcp`, `httpx`), using the official MCP Python SDK (https://github.com/modelcontextprotocol/python-sdk; read its current README for the server API, it changed in 2026). It talks to the Telegram Bot API (https://core.telegram.org/bots/api) by **long polling** with `getUpdates`, so nothing on their computer is reachable from the internet. Tools:
    - `send_message(text)`: send to `TELEGRAM_CHAT_ID` only (never to a chat ID the model chooses). Split text over 4,096 characters. Return a short confirmation.
    - `wait_for_messages(seconds=30)`: long-poll up to `seconds` (cap it at 50) and return new text messages from `TELEGRAM_CHAT_ID`, or "No new messages." Track the update `offset` so each message is returned once. **Drop every update from any other chat**, and log the drop to stderr.
@@ -79,7 +79,15 @@ Create `plugins/<user>-telegram/` in the harness repository:
 
 **CHECKPOINT:** the student received the message on their phone.
 
-## Step 3: the plugin loader and MCP client
+## Step 3: a research MCP server, as a second plugin
+
+1. **Ask what they'd like to ask their agent from their phone, about their research.** **CHECKPOINT:** agree on one small, useful thing. Good shapes: fetching and summarizing data from an archive they use (CDAWeb, OMNI, PDS, a mission API), wrapping an analysis script or model their group already has, searching NASA ADS or arXiv, or a field-specific calculation (coordinates, units, an ephemeris). Steer away from anything that writes, deletes or spends money; read-only is best. If it needs data or code they can't make public, use a public stand-in and say so in its README.
+2. Create `plugins/<user>-<name>/` with the same layout as the Telegram plugin: `.claude-plugin/plugin.json`, `.mcp.json`, `server.py` (a uv script), `skills/<name>/SKILL.md` and `README.md`. If it needs an API key (for example an ADS token), it comes from an environment variable in `.mcp.json`, typed into `.env` by the student; never in code.
+3. **Two to five tools**, written for a reader with no context (class slide "Write tools for a reader with no context"): names that say what they do, descriptions that say when to use them and when not, parameters with units and formats and an example, short results (a summary, with any large table or figure saved to a file whose path is returned), and errors that say what to try next. Put time limits on network calls.
+4. The skill: when to use the tools, in what order, and the field's conventions an agent wouldn't know (units, coordinate systems, data gaps, quality flags).
+5. Test it in Claude Code or Codex exactly as in Step 2, with a real research question. **CHECKPOINT:** the student checks that the answer is scientifically right, not just that it ran.
+
+## Step 4: the plugin loader and MCP client
 
 In the harness. Keep it small; a hundred lines or so.
 
@@ -92,7 +100,7 @@ In the harness. Keep it small; a hundred lines or so.
 
 **CHECKPOINT:** in the normal chat interface, ask the agent to send a Telegram message. Then have the student explain back: where do the Telegram tools' schemas enter the context, where does the skill, and what does the model never see? Fill in what they miss.
 
-## Step 4: the Telegram mode
+## Step 5: the Telegram mode
 
 1. A flag, e.g. `--telegram`: instead of the keyboard or web page, the harness gets each question by calling `wait_for_messages` itself, in a loop, through its MCP client.
 2. **The harness owns the channel.** In this mode, don't offer `wait_for_messages` to the model, or it may swallow your next message; the model keeps `send_message`.
@@ -100,7 +108,7 @@ In the harness. Keep it small; a hundred lines or so.
 4. **Approvals by reply**: when the model wants to run `bash` (or a tool not on the allow list), send "Run this command? `<command>` Reply yes or no." and wait for the answer with `wait_for_messages`. Anything but yes is a no, and the model is told the user declined.
 5. Keep the conversation across messages, as in week 2. A message like `/new` that starts a fresh conversation is a nice touch, not required.
 
-## Step 5: test
+## Step 6: test
 
 From the phone, with approvals on:
 - "What files are in the harness folder?": an approval request arrives, they reply yes, the answer arrives.
@@ -108,14 +116,15 @@ From the phone, with approvals on:
 - A two-step task, e.g. "How much free disk space do I have, and which folder in my home directory is biggest?"
 - **Somebody else gets ignored.** If a friend can message the bot, have them try. Otherwise set `TELEGRAM_CHAT_ID` to a wrong number for a moment and check that their own message is dropped and logged. Put it back.
 - Stop the harness, send a message, start it again: the old message must not run.
+- **A research question from the phone** that makes the agent use the research plugin, e.g. "What was the peak solar wind speed on May 10, 2024?". The answer arrives in the chat; check it is right.
 
 Fix what breaks. Commit as you go.
 
-## Step 6: publish and submit
+## Step 7: publish and submit
 
-1. Check what becomes public: `git status`, `git log --stat`, and `git grep -n -I -e "TELEGRAM_BOT_TOKEN=" -e "bot[0-9]\{8,\}:"` should show only placeholders. `.env` must not be tracked. **CHECKPOINT:** the student agrees, then push.
-2. Update the harness's `README.md`: plugins, the Telegram mode, and the safety notes.
-3. In their clone of this homework repository, on a branch `week-3-<user>` of their fork, copy the plugin folder to `week-3/submissions/<user>/` (the plugin's own files at that level, with its `README.md` linking to the harness repository and saying how to run Telegram mode).
+1. Check what becomes public: `git status`, `git log --stat`, and `git grep -n -I -e "TELEGRAM_BOT_TOKEN=" -e "bot[0-9]\{8,\}:"` should show only placeholders; check the research plugin's keys the same way. `.env` must not be tracked. **CHECKPOINT:** the student agrees, then push.
+2. Update the harness's `README.md`: its plugins, the Telegram mode, and the safety notes.
+3. In their clone of this homework repository, on a branch `week-3-<user>` of their fork, copy **both** plugin folders into `week-3/submissions/<user>/`, as `<user>-telegram/` and `<user>-<name>/`, and add `week-3/submissions/<user>/README.md`: one paragraph on each plugin, a link to the harness repository, and how to run it in Telegram mode. `claude plugin validate` should pass on both folders if Claude Code is available.
 4. Commit only that folder, push, and open the pull request with `gh pr create`. The description says which AI helped them, and how. **CHECKPOINT** before opening it.
 
 The class's CI only accepts changes under `week-3/submissions/<their-username>/`.

@@ -1,10 +1,10 @@
-# Week 3: talk to your agent from your phone
+# Week 3: talk to your agent from your phone, about your research
 
 **Due before class on Wednesday, October 21, 2026.**
 
-In class we looked at the layers Codex and Claude Code put around the agent loop: tools, MCP servers, skills, plugins, permissions and hooks. This week your harness from week 2 gets its first plugin: a **Telegram MCP server**. When you're done, you message your agent from your phone, it works on your computer, and it answers in the chat.
+In class we looked at the layers Codex and Claude Code put around the agent loop: tools, MCP servers, skills, plugins, permissions and hooks. This week your harness from week 2 gets its first two **plugins**: a **Telegram MCP server**, so you can message your agent from your phone, and an **MCP server for your own research**, so it can do something useful when you do.
 
-The idea behind it: your harness keeps only **the loop and the `bash` tool**. Everything else arrives as a plugin. Telegram is the first one; later in the quarter, more capabilities, and other agents, come in the same way.
+The idea behind it: your harness keeps only **the loop and the `bash` tool**. Everything else arrives as a plugin. These are the first two; later in the quarter, more capabilities, and other agents, come in the same way.
 
 ## Start
 
@@ -13,7 +13,7 @@ The idea behind it: your harness keeps only **the loop and the `bash` tool**. Ev
 
    > Read https://class.xhelio.ai/week-3/homework.md and help me with my homework.
 
-It helps you create the bot, build the MCP server and the plugin, extend your harness, test it from your phone, and open your pull request.
+It helps you create the bot, build both MCP servers as plugins, extend your harness, test it from your phone, and open your pull request.
 
 **You'll need:** your week 2 harness and its model API, [Telegram](https://telegram.org) on your phone (free; it needs a phone number), [uv](https://docs.astral.sh/uv/), and a GitHub account. If you didn't finish week 2, finish that first: this week builds on it.
 
@@ -36,15 +36,26 @@ The server talks to the [Telegram Bot API](https://core.telegram.org/bots/api) b
 
 The same server must also work in a second host: Claude Code (`claude --plugin-dir …`) or Codex (`codex mcp add …`). That's the point of MCP: write it once, use it anywhere.
 
-### 2. Your harness loads plugins
+### 2. An MCP server for your research, packaged as a plugin
+
+A second plugin, `plugins/<your-github-username>-<name>/`, in the same layout, whose tools do something from **your own research**. Pick one thing you'd like to ask your agent for from your phone. For example:
+
+- **Data:** fetch and summarize data from an archive you use (CDAWeb, OMNI, PDS, a mission's API, a lab database).
+- **Your code:** wrap an analysis script, a fit or a model your group already has, so the agent can run it with parameters.
+- **Literature:** search NASA ADS or arXiv for papers on a topic, or look up a paper's abstract and citations.
+- **A calculation:** a unit converter, a coordinate transform or an ephemeris for your field.
+
+Two to five tools is plenty. Write them for a reader with no context ([the slide](https://class.xhelio.ai/week-3/slides#tool-design)): clear names and descriptions, parameters with units and formats, short results (save big ones to a file and return a summary), and errors that say what to try next. Add a skill that tells an agent when and how to use the tools. Read-only tools are best; if it needs an API key (for example an ADS token), it comes from an environment variable, never from the code. It must also work in Claude Code or Codex.
+
+### 3. Your harness loads plugins
 
 - It finds plugins in its `plugins/` folder, starts the MCP servers each one lists in `.mcp.json`, asks each for its tools, and offers them to the model next to `bash`.
 - It lists each plugin skill's name and description in the system prompt; the model reads a skill's full `SKILL.md` with `bash` only when it needs it (progressive disclosure).
 - It still asks you before every `bash` command. MCP tools you trust (such as sending a message) can be on a short allow list in a config file; anything else asks.
 
-### 3. A Telegram mode
+### 4. A Telegram mode
 
-Started with a flag such as `--telegram`, your harness takes its questions from Telegram instead of the keyboard, runs the loop, and sends the answer back. When the model wants to run a command, it asks for your approval **in the chat**, and you reply yes or no.
+Started with a flag such as `--telegram`, your harness takes its questions from Telegram instead of the keyboard, runs the loop, and sends the answer back. When the model wants to run a command, it asks for your approval **in the chat**, and you reply yes or no. Show it working: from your phone, ask a question that makes the agent use your research plugin.
 
 Write the loop and the plugin loader yourself, with your AI agent's help. You may use the official [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) for the server and the client; no agent frameworks.
 
@@ -59,6 +70,15 @@ A Telegram bot connected to `bash` on your computer has all three legs of the [l
 
 ## What you submit
 
-A pull request adding your plugin folder as `week-3/submissions/<your-github-username>/`, the same files as `plugins/<your-github-username>-telegram/` in your harness repository. Its `README.md` says how to configure and load the plugin, and links to your harness repository with how to run it in Telegram mode. Say in your pull request which AI helped you, and how.
+A pull request adding both plugin folders under `week-3/submissions/<your-github-username>/`:
 
-It counts when your harness repository is public and updated, the plugin works in your harness and in Claude Code or Codex, you can chat with your agent from your phone and approve commands there, messages from anyone else are ignored, and no token is committed.
+```
+week-3/submissions/<your-github-username>/
+├── README.md                          # link to your harness repository, how to run it in Telegram mode
+├── <your-github-username>-telegram/   # the same files as in your harness's plugins/ folder
+└── <your-github-username>-<name>/     # your research plugin
+```
+
+Each plugin's own `README.md` says what it does and how to configure and load it. Say in your pull request which AI helped you, and how.
+
+It counts when your harness repository is public and updated, both plugins work in your harness and in Claude Code or Codex, you can chat with your agent from your phone, approve commands there and have it use your research plugin, messages from anyone else are ignored, and no token or key is committed.
