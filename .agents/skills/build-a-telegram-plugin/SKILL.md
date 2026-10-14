@@ -20,7 +20,7 @@ Say hello, tell them in two sentences what the homework is, and give this plan: 
 
 ## Step 0: set up
 
-1. Find their week 2 harness repository (ask where it is if you're not in it). `git status` should be clean; `git pull`. Check the harness still runs and its model API still answers. If week 2 isn't finished, finish it first with `.agents/skills/build-a-harness/SKILL.md`.
+1. Find their week 2 harness repository (ask where it is if you're not in it). `git status` should be clean; `git pull`. Check the harness still runs and its model API still answers. If week 2 isn't finished, tell them it's fine either way and **let them choose**: finish their harness first with `.agents/skills/build-a-harness/SKILL.md` (recommended: their own agent loop teaches them considerably more), or build both plugins and use them from an agent they already have (Claude Code, Codex or OpenClaw), skipping Steps 4 and 5. In that case, test the plugins in that agent, say in the submission README which agent they used, and skip the harness-only checks.
 2. Their copy of this homework repository: `git pull` in `~/ai-in-research-homework`, or clone it as in week 2.
 3. Check `uv --version` and `gh auth status`.
 4. Their GitHub username, lowercased, is `<user>` below. The plugin is called `<user>-telegram` (plugin names must not start with `claude-` or `anthropic-`).

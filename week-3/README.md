@@ -15,7 +15,7 @@ The idea behind it: your harness keeps only **the loop and the `bash` tool**. Ev
 
 It helps you create the bot, build both MCP servers as plugins, extend your harness, test it from your phone, and open your pull request.
 
-**You'll need:** your week 2 harness and its model API, [Telegram](https://telegram.org) on your phone (free; it needs a phone number), [uv](https://docs.astral.sh/uv/), and a GitHub account. If you didn't finish week 2, finish that first: this week builds on it.
+**You'll need:** your week 2 harness and its model API, [Telegram](https://telegram.org) on your phone (free; it needs a phone number), [uv](https://docs.astral.sh/uv/), and a GitHub account. **Missed week 2? That's fine.** Build the two plugins anyway and use them from an agent you already have, such as Claude Code, Codex or [OpenClaw](https://github.com/openclaw/openclaw), instead of your own harness, and skip the parts about your harness (sections 3 and 4). Chatting from your phone then depends on what that agent supports. But building on **your own agent loop** teaches you considerably more, about agents and about what these tools really do, so if you can, finish week 2's harness first.
 
 ## What you build
 
@@ -81,4 +81,4 @@ week-3/submissions/<your-github-username>/
 
 Each plugin's own `README.md` says what it does and how to configure and load it. Say in your pull request which AI helped you, and how.
 
-It counts when your harness repository is public and updated, both plugins work in your harness and in Claude Code or Codex, you can chat with your agent from your phone, approve commands there and have it use your research plugin, messages from anyone else are ignored, and no token or key is committed.
+It counts when your harness repository is public and updated, both plugins work in your harness and in Claude Code or Codex, you can chat with your agent from your phone, approve commands there and have it use your research plugin, messages from anyone else are ignored, and no token or key is committed. Using an existing agent instead of your own harness? Then it counts when both plugins work in that agent and it answers a research question with yours.
